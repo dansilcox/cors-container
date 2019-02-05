@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/imjacobclark/cors-proxy#readme",
   "dependencies": {
+    "body-parser": "^1.18",
     "chai": "^3.5.0",
     "chai-spies": "^0.7.1",
     "compression": "^1.6.1",
