@@ -40,6 +40,14 @@ module.exports = function(app) {
         const requestedUrl = req.params[0];
         const corsBaseUrl = '//' + req.get('host');
         const auth = req.get('authorization') || '';
+        var proxiedRequestHeaders = {
+            'User-Agent': 'CorsContainer'
+        };
+        if (auth) {
+            proxiedRequestHeaders.Authorization = auth;
+            console.log('Sending Authorization header to proxied URL');
+        }
+
         const queryParams = req.originalUrl.split('?')[1] || '';
         console.info(req.protocol + '://' + req.get('host') + originalUrl);
 
@@ -51,10 +59,7 @@ module.exports = function(app) {
         request({
             uri: requestedUrl + '?' + queryParams,
             resolveWithFullResponse: true,
-            headers: {
-                'User-Agent': 'CorsContainer',
-                'Authorization': auth
-            }
+            headers: proxiedRequestHeaders
         })
             .then(originResponse => {
                 responseBuilder
