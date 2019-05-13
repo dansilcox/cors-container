@@ -1,6 +1,7 @@
 'use strict';
 
 const request = require('request-promise');
+const querystring = require('querystring');
 const bodyParser = require('body-parser');
 const converter = require('rel-to-abs');
 const fs = require('fs');
@@ -40,15 +41,22 @@ module.exports = function(app) {
         const requestedUrl = req.params[0];
         const corsBaseUrl = '//' + req.get('host');
         const auth = req.get('authorization') || '';
+        
+        var queryParamsDecoded = querystring.decode(req.originalUrl.split('?')[1] || '');
+        const proxyAuth = queryParamsDecoded.proxyAuth === 'true' || false;
+
         var proxiedRequestHeaders = {
             'User-Agent': 'CorsContainer'
         };
-        if (auth) {
+        if (auth && proxyAuth) {
             proxiedRequestHeaders.Authorization = auth;
             console.log('Sending Authorization header to proxied URL');
         }
 
-        const queryParams = req.originalUrl.split('?')[1] || '';
+        
+        // Don't proxy the proxyAuth param
+        delete queryParamsDecoded.proxyAuth;
+
         console.info(req.protocol + '://' + req.get('host') + originalUrl);
 
         if(requestedUrl === ''){
@@ -57,7 +65,7 @@ module.exports = function(app) {
         }
 
         request({
-            uri: requestedUrl + '?' + queryParams,
+            uri: requestedUrl + '?' + querystring.stringify(queryParamsDecoded),
             resolveWithFullResponse: true,
             headers: proxiedRequestHeaders
         })
